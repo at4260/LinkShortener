@@ -17,7 +17,7 @@ def home_page():
 
 @app.route("/create")
 def create_link():
-    input_link = request.args.get("input_link")
+    input_link = request.args.get("input_link_shorten")
     
     link = m_session.query(model.Link).filter_by(original_link=input_link).first()
 
@@ -27,7 +27,7 @@ def create_link():
     else:
         # shortened_link = pbkdf2_sha512.encrypt(
         #     link, salt=b'64', rounds=100000, salt_size=16)
-        shortened_link = "http://www.google.com/" + str(randint(0,1000))
+        shortened_link = "http://www.lilone.ly/" + str(randint(0,1000))
 
         # Checking if shortened link is already in database- possible encryption collisions
         check_shortened_link = m_session.query(model.Link).filter_by(shortened_link=shortened_link).first()
@@ -38,6 +38,19 @@ def create_link():
         m_session.add(new_link)
         m_session.commit()          
     return render_template("create.html", shortened_link=shortened_link)
+
+@app.route("/access")
+def access_link():
+    input_link = request.args.get("input_link_access")
+    
+    link = m_session.query(model.Link).filter_by(shortened_link=input_link).first()
+
+    # Checking if link is already in database and routes to original link
+    if link is not None:
+        original_link = link.original_link
+        return redirect(original_link)
+    else:
+        return redirect("/")
 
 
 if __name__ == "__main__":
